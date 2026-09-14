@@ -4,7 +4,6 @@ project(SocialDeductionBot CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 1. Pull D++ directly from GitHub (Bypasses vcpkg)
 include(FetchContent)
 FetchContent_Declare(
     dpp
@@ -13,14 +12,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(dpp)
 
-add_executable(bot main.cpp)
+# 1. Point to your source files in the src/ folder
+add_executable(bot 
+    src/main.cpp 
+    src/UI.cpp
+)
 
-# 1. Link the local 'dpp' target instead of the imported 'dpp::dpp'
 target_link_libraries(bot PRIVATE dpp)
 
-# 2. Explicitly tell your bot where the downloaded D++ headers live
-target_include_directories(bot PRIVATE ${dpp_SOURCE_DIR}/include)
+# 2. Tell CMake where to look for local headers AND D++ headers
+target_include_directories(bot PRIVATE 
+    ${dpp_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
+# --- Post-Build DLL Copying ---
 add_custom_command(TARGET bot POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     $<TARGET_FILE:dpp>

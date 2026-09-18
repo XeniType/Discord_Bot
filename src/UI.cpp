@@ -94,4 +94,43 @@ namespace UI {
         msg.add_embed(embed);
         return msg;
     }
+
+    dpp::message create_target_selection_message(const GameManager& game, Role viewer_role, const std::string& custom_id, const std::string& placeholder) {
+        dpp::embed embed;
+        embed.set_color(0x2F3136)
+            .set_title("🎯 CHOOSE YOUR TARGET")
+            .set_description("Select a player from the dropdown menu below to perform your night action.");
+
+        dpp::component select_menu;
+        select_menu.set_type(dpp::cot_selectmenu)
+                .set_id(custom_id)
+                .set_placeholder(placeholder)
+                .set_min_values(1)
+                .set_max_values(1);
+
+        for (const auto& player : game.get_players()) {
+            if (player.is_alive) {
+                // Rule: If the viewer is Mafia, do not show other Mafia members as targets
+                if (viewer_role == Role::MAFIA && player.role == Role::MAFIA) {
+                    continue; 
+                }
+
+                select_menu.add_select_option(dpp::select_option(
+                    player.username,             // Displays actual username
+                    std::to_string(player.id), // Hidden value contains user ID
+                    "Target " + player.username
+                ));
+            }
+        }
+
+        dpp::component action_row;
+        action_row.set_type(dpp::cot_action_row);
+        action_row.add_component(select_menu);
+
+        dpp::message msg;
+        msg.set_flags(dpp::m_ephemeral);
+        msg.add_embed(embed);
+        msg.add_component(action_row);
+        return msg;
+    }
 } // namespace UI

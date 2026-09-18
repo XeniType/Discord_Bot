@@ -10,4 +10,7 @@ namespace UI {
     // Night Phase UI (For announcing nightfall and private role cards)
     dpp::message create_night_announcement_message();
     dpp::message create_role_card_message(Role role);
+
+    // Generates a select menu containing all alive players as choices
+    dpp::message create_target_selection_message(const GameManager& game, Role viewer_role, const std::string& custom_id, const std::string& placeholder);
 } // namespace UI

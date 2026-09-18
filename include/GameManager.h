@@ -6,7 +6,7 @@
 
 // 1. Data Definitions
 enum class GamePhase { IDLE, LOBBY, NIGHT, DAY, VOTING };
-enum class Role { UNASSIGNED, VILLAGER, MAFIA, DETECTIVE, DOCTOR };
+enum class Role { UNASSIGNED = 0, VILLAGER, MAFIA, DETECTIVE, DOCTOR };
 
 struct Player {
     dpp::snowflake id;
@@ -20,6 +20,11 @@ struct NightResult {
     bool someone_died{false};
     dpp::snowflake victim_id{0};
     std::string victim_name;
+
+    bool detective_investigated{false};
+    dpp::snowflake detective_target_id{0};
+    std::string detective_target_name;
+    bool target_is_mafia{false};
 };
 
 // 2. Class Definition
@@ -121,7 +126,7 @@ class GameManager {
 
         bool start_night() {
             if (current_phase != GamePhase::LOBBY) return false;
-            //if (players.size() < 3) return false; // Require at least 3 players
+            if (players.size() < 3) return false; // Require at least 3 players
 
             current_phase = GamePhase::NIGHT;
 
@@ -136,7 +141,7 @@ class GameManager {
 
             // Assign roles based on player count
             players[0].role = Role::MAFIA;
-            //players[1].role = Role::DETECTIVE;
+            players[1].role = Role::DETECTIVE;
             if (players.size() >= 4) {
                 players[2].role = Role::DOCTOR;
                 for (size_t i = 3; i < players.size(); ++i) {
@@ -172,6 +177,21 @@ class GameManager {
                     if (p.id == mafia_target) {
                         p.is_alive = false;
                         result.victim_name = p.username;
+                        break;
+                    }
+                }
+            }
+
+            if (detective_target != 0) {
+            result.detective_investigated = true;
+            result.detective_target_id = detective_target;
+
+            for (const auto& p : players) {
+                    if (p.id == detective_target) {
+                        result.detective_target_name = p.username;
+                        if (p.role == Role::MAFIA) {
+                            result.target_is_mafia = true;
+                        }
                         break;
                     }
                 }

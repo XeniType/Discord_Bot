@@ -16,6 +16,7 @@ FetchContent_MakeAvailable(dpp)
 add_executable(bot 
     src/main.cpp 
     src/UI.cpp
+    src/CommandHandler.cpp
 )
 
 target_link_libraries(bot PRIVATE dpp)

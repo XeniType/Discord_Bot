@@ -2,13 +2,13 @@
 
 namespace UI {
     
-    dpp::message create_lobby_message(const GameManager& game) {
+    dpp::message create_lobby_message(std::shared_ptr<GameManager> game) {
         dpp::embed embed;
         embed.set_color(0x8B0000) // Deep Crimson
         .set_title("🌙 THE TOWN SQUARE — GATHERING")
         .set_description("Whispers echo through the cobblestone streets. The town is uneasy as darkness approaches...\n\n*Click **Join Game** to secure your place before night falls.*")
-        .add_field("Active Conspirators (" + std::to_string(game.get_player_count()) + ")", 
-        game.get_player_mentions(), false)
+        .add_field("Active Conspirators (" + std::to_string(game->get_player_count()) + ")", 
+        game->get_player_mentions(), false)
         .set_footer(dpp::embed_footer().set_text("Engine v0.1 • Native C++ Backend"));
         
         dpp::component join_btn;
@@ -90,12 +90,11 @@ namespace UI {
         .set_description(role_desc);
         
         dpp::message msg;
-        msg.set_flags(dpp::m_ephemeral); // Keep it private
         msg.add_embed(embed);
         return msg;
     }
 
-    dpp::message create_target_selection_message(const GameManager& game, Role viewer_role, const std::string& custom_id, const std::string& placeholder) {
+    dpp::message create_target_selection_message( std::shared_ptr<GameManager> game, Role viewer_role, const std::string& custom_id, const std::string& placeholder) {
         dpp::embed embed;
         embed.set_color(0x2F3136)
             .set_title("🎯 CHOOSE YOUR TARGET")
@@ -108,7 +107,7 @@ namespace UI {
                 .set_min_values(1)
                 .set_max_values(1);
 
-        for (const auto& player : game.get_players()) {
+        for (const auto& player : game->get_players()) {
             if (player.is_alive) {
                 // Rule: If the viewer is Mafia, do not show other Mafia members as targets
                 if (viewer_role == Role::MAFIA && player.role == Role::MAFIA) {
@@ -128,7 +127,6 @@ namespace UI {
         action_row.add_component(select_menu);
 
         dpp::message msg;
-        msg.set_flags(dpp::m_ephemeral);
         msg.add_embed(embed);
         msg.add_component(action_row);
         return msg;

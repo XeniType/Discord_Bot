@@ -12,6 +12,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(dpp)
 
+FetchContent_Declare(
+    dotenv
+    GIT_REPOSITORY https://github.com/SermetPekin/dotenv
+    GIT_TAG        v0.1.0
+)
+FetchContent_MakeAvailable(dotenv)
+
 # 1. Point to your source files in the src/ folder
 add_executable(bot 
     src/main.cpp 
@@ -25,6 +32,7 @@ target_link_libraries(bot PRIVATE dpp)
 target_include_directories(bot PRIVATE 
     ${dpp_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${dotenv_SOURCE_DIR}/include
 )
 
 # --- Post-Build DLL Copying ---
@@ -46,4 +54,10 @@ add_custom_command(TARGET bot POST_BUILD
     $<TARGET_FILE:dpp>
     $<TARGET_FILE_DIR:bot>
     COMMENT "Copying dpp.dll..."
+)
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/.env.example"
+    "${CMAKE_CURRENT_BINARY_DIR}/.env"
+    COPYONLY
 )

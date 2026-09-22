@@ -1,19 +1,23 @@
 #include <dpp/dpp.h>
+#include <cstdlib>
 #include <iostream>
 #include <exception>
 
-// Include your subsystems
 #include "SessionManager.h"
 #include "CommandHandler.h"
-
-// Make sure to paste your ACTUAL token from the Discord Developer Portal here!
-const std::string BOT_TOKEN = "MTU0ODAxNzM0Nzc5NTc1MTAzMg.GhvRA0.1gyWHe2qhze2IWat097GSsUXehnDFOsegdU-u8";
-
-const dpp::snowflake MY_SERVER_ID = 772126757192859648ULL;
+#include "dotenv.h"
 
 int main() {
+    dotenv env(".env"); // Load environment variables from .env file
+    std::string token_env = env.get("DISCORD_TOKEN");
+    
+    if (token_env.empty()) {
+        std::cerr << "Error: DISCORD_TOKEN environment variable not set!\n";
+        return 1;
+    }
+
     try {
-        dpp::cluster bot(BOT_TOKEN, dpp::i_default_intents | dpp::i_message_content);
+        dpp::cluster bot(token_env, dpp::i_default_intents | dpp::i_message_content);
         bot.on_log(dpp::utility::cout_logger());
 
         SessionManager session_manager;
@@ -23,7 +27,8 @@ int main() {
                 dpp::slashcommand ping_cmd("ping", "Check bot latency", bot.me.id);
                 dpp::slashcommand start_cmd("create_lobby", "Open a new game lobby", bot.me.id);
                 dpp::slashcommand night_cmd("start_game", "Close lobby, assign roles, and begin Night 1", bot.me.id);
-                bot.guild_bulk_command_create({ping_cmd, start_cmd, night_cmd}, MY_SERVER_ID);
+                
+                bot.global_bulk_command_create({ping_cmd, start_cmd, night_cmd});
             }
         });
         
